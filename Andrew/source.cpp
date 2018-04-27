@@ -4,6 +4,8 @@
 
 using namespace std;
 
+const int SIZE = 4;
+
 class Pitcher{
 public:
   Pitcher() {contents = 0; capacity = 0;};
@@ -28,25 +30,56 @@ private:
 
 int min(int a, int b)
 {
-  return (a > b)? a: b;
+  if(a != 0 && b != 0)
+    return (a < b)? a: b;
+  else
+  {
+    if(a == 0 && b == 0)
+      return 0;
+    else
+      return (a != 0)? a: b;
+  }
+
 }
 
-void FloydAlg(int matrix[][9])
+void printMatrix(int matrix[][SIZE])
 {
-  for(int k = 0; k < 9; k++)
+  for(int i = 0; i < SIZE; i++)
   {
-    for(int i = 0; i < 9; i++)
+    for(int j = 0; j < SIZE; j++)
     {
-      for(int j = 0; j < 9; j++)
+      cout << setw(2) << matrix[i][j] << "  ";
+    }
+    cout << endl;
+  }
+  cout << endl;
+}
+
+void FloydAlg(int matrix[][SIZE])
+{
+  cout << "inital Matrix: \n";
+  printMatrix(matrix);
+  for(int k = 0; k < SIZE; k++)
+  {
+    // looks at the row second
+    for(int i = 0; i < SIZE; i++)
+    {
+      // looks at the column first
+      for(int j = 0; j < SIZE; j++)
       {
         // do not update shortest path to itself
         if(i != j){
-          matrix[i][j] = min(matrix[i][j], matrix[i][k]+matrix[k][j]);
+          // check for additions with 0, not valid as they are infinity
+          if(matrix[i][k] != 0 && matrix[k][j] != 0)
+            matrix[i][j] = min(matrix[i][j], (matrix[i][k]+matrix[k][j]) );
         }
       }
     }
+    cout << "Floyd Round #" << k+1 << endl;
+    printMatrix(matrix);
   }
 }
+
 
 
 // MAIN PROGRAM
@@ -57,7 +90,8 @@ int main(){
   // a.printPitcherGroup();
 
   // Demo matrix
-  
+  int demoMatrix[SIZE][SIZE] = { {0,0,3,0},{2,0,0,0},{0,7,0,1},{6,0,0,0} };
+  FloydAlg(demoMatrix);
 
 
 
