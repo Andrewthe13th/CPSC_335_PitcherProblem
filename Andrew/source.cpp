@@ -4,6 +4,7 @@
 
 using namespace std;
 
+// the size of the testing matrix, change if necessay
 const int SIZE = 4;
 
 class Pitcher{
@@ -80,7 +81,21 @@ void FloydAlg(int matrix[][SIZE])
   }
 }
 
-
+bool matrixComparision(const int a[][SIZE], const int b[][SIZE])
+{
+  for(int i = 0; i < SIZE; i++)
+  {
+    for(int j = 0; j < SIZE; j++)
+    {
+      if(a[i][j] != b[i][j])
+      {
+        cout << a[i][j] <<  " != " <<  b[i][j] << endl;
+        return false;
+      }
+    }
+  }
+  return true;
+}
 
 // MAIN PROGRAM
 int main(){
@@ -93,6 +108,11 @@ int main(){
   int demoMatrix[SIZE][SIZE] = { {0,0,3,0},{2,0,0,0},{0,7,0,1},{6,0,0,0} };
   FloydAlg(demoMatrix);
 
+  int matrixSolution[SIZE][SIZE] = { {0,10,3,4},{2,0,5,6},{7,7,0,1},{6,16,9,0} };
+  if(matrixComparision(demoMatrix,matrixSolution))
+    cout << "Matrix is correct!!!\n";
+  else
+    cout << "NOT A MATCH!!!!!\n";
 
 
   // end of program
