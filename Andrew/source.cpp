@@ -95,19 +95,21 @@ Node *newnode(int a, int b, int c) {
 
 class Tree {
 public:
+  Node *root;
   vector<PitcherGroup> v;
-  Tree(){};
+  Tree() {
+    root = newnode(16, 0, 0);
+    v.push_back(root->data);
+  }
   Node *createTree(Node *n) {
     // If last round didn't add anything new than quit
-    if (n = NULL)
+    if (n == NULL)
       return NULL;
     else {
       bool newPitcherCombinations = false;
       int new7pitcher = 0;
       int new9pitcher = 0;
       int new16pitcher = 0;
-      cout << n->data.pitcherGroup[0].getContents() << endl;
-      cout << "Why does this line below seg fault here" << endl;
       // Check if the 16 pitcher is not empty
       if (n->data.pitcherGroup[0].getContents() != 0) {
         // check if the 9 pitcher has rooom
@@ -235,41 +237,62 @@ public:
         }
       }
       // bool to check if there were any new pitcher combinations
-      cout << "test3" << endl;
       // checks all new pitcher combos just made
-      if (std::find(v.begin(), v.end(), n->c1->data) != v.end()) {
-        // If a new pitcher combo was found throw it in the vector
-        v.push_back(n->c1->data);
-        newPitcherCombinations = true;
+      if (n->c1 != NULL) {
+        if (std::find(v.begin(), v.end(), n->c1->data) != v.end()) {
+
+        } else { // If a new pitcher combo was found throw it in the vector
+          v.push_back(n->c1->data);
+          newPitcherCombinations = true;
+        }
       }
-      if (std::find(v.begin(), v.end(), n->c2->data) != v.end()) {
-        // If a new pitcher combo was found throw it in the vector
-        v.push_back(n->c2->data);
-        newPitcherCombinations = true;
+      if (n->c2 != NULL) {
+        if (std::find(v.begin(), v.end(), n->c2->data) != v.end()) {
+
+        } else {
+          // If a new pitcher combo was found throw it in the vector
+          v.push_back(n->c2->data);
+          newPitcherCombinations = true;
+        }
       }
-      if (std::find(v.begin(), v.end(), n->c3->data) != v.end()) {
-        // If a new pitcher combo was found throw it in the vector
-        v.push_back(n->c3->data);
-        newPitcherCombinations = true;
+      if (n->c3 != NULL) {
+        if (std::find(v.begin(), v.end(), n->c3->data) != v.end()) {
+
+        } else {
+          // If a new pitcher combo was found throw it in the vector
+          v.push_back(n->c3->data);
+          newPitcherCombinations = true;
+        }
       }
-      if (std::find(v.begin(), v.end(), n->c4->data) != v.end()) {
-        // If a new pitcher combo was found throw it in the vector
-        v.push_back(n->c4->data);
-        newPitcherCombinations = true;
+      if (n->c4 != NULL) {
+        if (std::find(v.begin(), v.end(), n->c4->data) != v.end()) {
+
+        } else {
+          // If a new pitcher combo was found throw it in the vector
+          v.push_back(n->c4->data);
+          newPitcherCombinations = true;
+        }
       }
-      if (std::find(v.begin(), v.end(), n->c5->data) != v.end()) {
-        // If a new pitcher combo was found throw it in the vector
-        v.push_back(n->c5->data);
-        newPitcherCombinations = true;
+      if (n->c5 != NULL) {
+        if (std::find(v.begin(), v.end(), n->c5->data) != v.end()) {
+
+        } else {
+          // If a new pitcher combo was found throw it in the vector
+          v.push_back(n->c5->data);
+          newPitcherCombinations = true;
+        }
       }
-      if (std::find(v.begin(), v.end(), n->c6->data) != v.end()) {
-        // If a new pitcher combo was found throw it in the vector
-        v.push_back(n->c6->data);
-        newPitcherCombinations = true;
+      if (n->c6 != NULL) {
+        if (std::find(v.begin(), v.end(), n->c6->data) != v.end()) {
+
+        } else {
+          // If a new pitcher combo was found throw it in the vector
+          v.push_back(n->c6->data);
+          newPitcherCombinations = true;
+        }
       }
       // If just one new pitcher combo was found, take tree down a level
       if (newPitcherCombinations) {
-        cout << "test#" << endl;
         return createTree(n->c1);
         return createTree(n->c2);
         return createTree(n->c3);
@@ -280,7 +303,7 @@ public:
         return NULL;
       }
     }
-  };
+  }
 };
 
 void FloydAlg(int matrix[][SIZE]) {
@@ -319,14 +342,10 @@ bool matrixComparision(const int a[][SIZE], const int b[][SIZE]) {
 // MAIN PROGRAM
 int main() {
   Tree start;
-  Node *pass;
-  pass = newnode(16, 0, 0);
-  cout << pass->data.pitcherGroup[0].getContents() << endl;
-  start.v.push_back(pass->data);
-  start.createTree(pass);
   // dummy code
   // PitcherGroup a(8,8,0);
   // a.printPitcherGroup();
+  Node *test = start.createTree(start.root);
 
   // Demo matrix
   int demoMatrix[SIZE][SIZE] = {
