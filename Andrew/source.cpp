@@ -49,7 +49,7 @@ public:
 			x.printPitcher();
 			cout << " ";
 		}
-		cout << ")";
+		cout << ") ";
 	};
 
 	PitcherGroup& operator=(PitcherGroup other)
@@ -61,12 +61,7 @@ public:
 	};
 
 	bool operator==(const PitcherGroup &rhs) {
-		return ((this->pitcherGroup[0].getContents() ==
-			rhs.pitcherGroup[0].getContents()) &&
-			(this->pitcherGroup[1].getContents() ==
-				rhs.pitcherGroup[1].getContents()) &&
-				(this->pitcherGroup[2].getContents() ==
-					rhs.pitcherGroup[2].getContents()));
+		return (((this->pitcherGroup[0].contents == rhs.pitcherGroup[0].contents) && (this->pitcherGroup[1].contents == rhs.pitcherGroup[1].contents) && (this->pitcherGroup[2].contents == rhs.pitcherGroup[2].contents))?true:false);
 	}
 	Pitcher pitcherGroup[3];
 };
@@ -96,6 +91,27 @@ void printMatrix(int matrix[][SIZE]) {
 int returnIndex(vector<PitcherGroup> closedList, PitcherGroup combination) {
 	for (int i = 0; i < static_cast<int>(closedList.size()); i++) {
 		if (closedList[i] == combination)
+			return i;
+	}
+	return -1;
+}
+
+struct Node {
+	PitcherGroup data;
+	Node* previous = nullptr;
+	Node* path[6] = { nullptr };
+};
+
+Node *newnode(int a, int b, int c) {
+	Node *node = new Node;
+	node->data = PitcherGroup(a, b, c);
+	return (node);
+}
+
+// returns the index for the closed list of possible combinations which relate to positioning within the adjacency matrix
+int returnIndex(vector<Node*> closedList, PitcherGroup combination) {
+	for (int i = 0; i < static_cast<int>(closedList.size()); i++) {
+		if (closedList[i]->data == combination)
 			return i;
 	}
 	return -1;
@@ -148,319 +164,185 @@ bool matrixComparision(const vector<vector<int>> a, const vector<vector<int>> b)
 	return true;
 }
 
-struct Node {
-	PitcherGroup data;
-	Node* c1 = nullptr;
-	Node* c2 = nullptr;
-	Node* c3 = nullptr;
-	Node* c4 = nullptr;
-	Node* c5 = nullptr;
-	Node* c6 = nullptr;
-};
 
-Node *newnode(int a, int b, int c) {
-	Node *node = new Node;
-	node->data = PitcherGroup(a, b, c);
-	return (node);
-}
-
-
+// creates the graph, and hold adjacency matrix
 class Tree {
 public:
 	Node *root;
 	vector<PitcherGroup> v;
 	vector<vector<int>> adjacencyMatrix;
 	int leaves;
-	//vector<vector<int>> adjacencyMatrix;
+
+	//Constructor
 	Tree() {
 		root = newnode(16, 0, 0);
 		adjacencyMatrix.resize(32, vector<int>(32, 0));
 		v.push_back(root->data);
+		root->data.printPitcherGroup();
 		leaves = 0;
 	}
-	Node *createTree(Node *n) {
+
+	// Creates the Graph
+	Node *createTree(Node *n, int height) {
 
 		// If last round didn't add anything new than quit
-		if (n == nullptr) {
+		if (n == nullptr || height == 0) {
 			return nullptr;
 		}
-		else {
-			n->c1 = nullptr;
-			n->c2 = nullptr;
-			n->c3 = nullptr;
-			n->c4 = nullptr;
-			n->c5 = nullptr;
-			n->c6 = nullptr;
-			bool newPitcherCombinations = false;
-			int new7pitcher = 0;
-			int new9pitcher = 0;
-			int new16pitcher = 0;
+		// check if a path repeats a combination
+		if (height > 1)
+		{
+			Node *upstream = n->previous; bool bRepeated = false;
 
-			// Check if the 16 pitcher is not empty
-			if (n->data.pitcherGroup[0].getContents() != 0) {
-
-				// check if the 9 pitcher has rooom
-				if (n->data.pitcherGroup[1].hasRoom()) {
-
-					// If 16pitcher has more water than the 9 pitcher has space
-					if (n->data.pitcherGroup[1].space() <
-						n->data.pitcherGroup[0].getContents()) {
-						// how much the 16 pitcher will have after the move
-						new16pitcher = n->data.pitcherGroup[0].getContents() -
-							n->data.pitcherGroup[1].space();
-						// fill up 9
-						new9pitcher = 9;
-					}
-					else {
-						// pitcher 9 is partially filled
-						new9pitcher = n->data.pitcherGroup[1].getContents() +
-							(n->data.pitcherGroup[0].getContents());
-						new16pitcher = 0;
-					}
-					// create new node from edge 16->9
-					n->c1 = newnode(new16pitcher, new9pitcher,
-						n->data.pitcherGroup[2].getContents());
-					leaves++;
+			while (bRepeated != true && upstream != nullptr)
+			{
+				if (n->data == upstream->data)
+				{
+					bRepeated = true;
 				}
-				// check if ptcher 7 has room
-				if (n->data.pitcherGroup[2].hasRoom()) {
-
-					// If 16pitcher has more water than the 7 pitcher has space
-					if (n->data.pitcherGroup[2].space() <
-						n->data.pitcherGroup[0].getContents()) {
-						// how much the 16 pitcher will have after the move
-						new16pitcher = n->data.pitcherGroup[0].getContents() -
-							n->data.pitcherGroup[2].space();
-						// fill up 7
-						new7pitcher = 7;
-					}
-					else {
-						// pitcher 7 is partially filled
-						new7pitcher = n->data.pitcherGroup[2].getContents() +
-							n->data.pitcherGroup[0].getContents();
-						new16pitcher = 0;
-					}
-					// create new node from edge 16->7
-					n->c2 = newnode(new16pitcher, n->data.pitcherGroup[1].getContents(),
-						new7pitcher);
-					leaves++;
-				}
+				upstream = upstream->previous;
 			}
 
-			// Check if the 9 pitcher is empty
-			if (n->data.pitcherGroup[1].getContents() != 0) {
-				// check if the 16 pitcher has rooom
-				if (n->data.pitcherGroup[0].hasRoom()) {
-
-					// If 9 pitcher has more water than the 16 pitcher has space
-					if (n->data.pitcherGroup[0].space() <
-						n->data.pitcherGroup[1].getContents()) {
-						// how much the 9 pitcher will have after the move
-						new9pitcher = n->data.pitcherGroup[1].getContents() -
-							n->data.pitcherGroup[0].space();
-
-						// fill up 16
-						new16pitcher = 16;
-					}
-					else {
-						// pitcher 16 is partially filled
-						new16pitcher = n->data.pitcherGroup[1].getContents() +
-							n->data.pitcherGroup[0].getContents();
-						new9pitcher = 0;
-					}
-					// create new node from edge 9->16
-
-					n->c3 = newnode(new16pitcher, new9pitcher,
-						n->data.pitcherGroup[2].getContents());
-					leaves++;
-				}
-
-				// check if ptcher 7 has room
-				if (n->data.pitcherGroup[2].hasRoom()) {
-
-					// If pitcher 9 has more water than the 7 pitcher has space
-					if (n->data.pitcherGroup[2].space() <
-						n->data.pitcherGroup[1].getContents()) {
-						// how much the 9 pitcher will have after the move
-						new9pitcher = n->data.pitcherGroup[1].getContents() -
-							n->data.pitcherGroup[2].space();
-						// fill up 7
-						new7pitcher = 7;
-
-					}
-					else {
-						// pitcher 7 is partially filled
-						new7pitcher = n->data.pitcherGroup[2].getContents() +
-							n->data.pitcherGroup[1].getContents();
-						new9pitcher = 0;
-					}
-					// create new node from edge 9->7
-
-					n->c4 = newnode(n->data.pitcherGroup[0].getContents(), new9pitcher,
-						new7pitcher);
-					leaves++;
-				}
-			}
-
-			// Check if the 7 pitcher is empty
-			if (n->data.pitcherGroup[2].getContents() != 0) {
-				// check if the 16 pitcher has rooom
-				if (n->data.pitcherGroup[0].hasRoom()) {
-
-					// If 7 pitcher has more water than the 16 pitcher has space
-					if (n->data.pitcherGroup[0].space() <
-						n->data.pitcherGroup[2].getContents()) {
-						// how much the 7 pitcher will have after the mov
-						new7pitcher = n->data.pitcherGroup[2].getContents() -
-							n->data.pitcherGroup[0].space();
-						// fill up 16
-						new16pitcher = 16;
-
-					}
-					else {
-						// pitcher 16 is partially filled
-						new16pitcher = n->data.pitcherGroup[2].getContents() +
-							n->data.pitcherGroup[0].getContents();
-
-						new7pitcher = 0;
-					}
-					// create new node from edge 7->16
-
-					n->c5 = newnode(new16pitcher, n->data.pitcherGroup[1].getContents(),
-						new7pitcher);
-					leaves++;
-				}
-				// check if ptcher 9 has room
-				if (n->data.pitcherGroup[2].hasRoom()) {
-
-					// If pitcher 7 has more water than the 9 pitcher has space
-					if (n->data.pitcherGroup[1].space() <
-						n->data.pitcherGroup[2].getContents()) {
-						// how much the 7 pitcher will have after the move
-						new7pitcher = n->data.pitcherGroup[2].getContents() -
-							n->data.pitcherGroup[1].space();
-						// fill up 9
-						new9pitcher = 9;
-					}
-					else {
-						// pitcher 7 is partially filled
-						new9pitcher = n->data.pitcherGroup[2].getContents() +
-							n->data.pitcherGroup[1].getContents();
-						new7pitcher = 0;
-					}
-					// create new node from edge 7->9
-
-					n->c6 = newnode(n->data.pitcherGroup[0].getContents(), new9pitcher,
-						new7pitcher);
-					leaves++;
-				}
-			}
-
-			// bool to check if there were any new pitcher combinations
-			// checks all new pitcher combos just made
-			if (n->c1 != nullptr) {
-				if (std::find(v.begin(), v.end(), n->c1->data) != v.end()) {
-				}
-				else { // If a new pitcher combo was found throw it in the vector
-					v.push_back(n->c1->data);
-					// Show relationship on adjacency matrix
-					adjacencyMatrix[static_cast<int>(v.size()-1)][returnIndex(v, n->data)] += 1;
-					adjacencyMatrix[returnIndex(v, n->data)][static_cast<int>(v.size() - 1)] += 1;
-					//n->c1->data.printPitcherGroup();
-
-					newPitcherCombinations = true;
-				}
-			}
-			if (n->c2 != nullptr) {
-				if (std::find(v.begin(), v.end(), n->c2->data) != v.end()) {
-				}
-				else {
-					// If a new pitcher combo was found throw it in the vector
-					v.push_back(n->c2->data);
-					// Show relationship on adjacency matrix
-					adjacencyMatrix[static_cast<int>(v.size() - 1)][returnIndex(v, n->data)] += 1;
-					adjacencyMatrix[returnIndex(v, n->data)][static_cast<int>(v.size() - 1)] += 1;
-					//n->c2->data.printPitcherGroup();
-
-					newPitcherCombinations = true;
-				}
-			}
-			if (n->c3 != nullptr) {
-				if (std::find(v.begin(), v.end(), n->c3->data) != v.end()) {
-				}
-				else {
-					// If a new pitcher combo was found throw it in the vector
-					//n->c3->data.printPitcherGroup();
-					v.push_back(n->c3->data);
-					// Show relationship on adjacency matrix
-					adjacencyMatrix[static_cast<int>(v.size() - 1)][returnIndex(v, n->data)] += 1;
-					adjacencyMatrix[returnIndex(v, n->data)][static_cast<int>(v.size() - 1)] += 1;
-
-					newPitcherCombinations = true;
-				}
-			}
-			if (n->c4 != nullptr) {
-				if (std::find(v.begin(), v.end(), n->c4->data) != v.end()) {
-
-				}
-				else {
-					// If a new pitcher combo was found throw it in the vector
-					v.push_back(n->c4->data);
-					// Show relationship on adjacency matrix
-					adjacencyMatrix[static_cast<int>(v.size() - 1)][returnIndex(v, n->data)] += 1;
-					adjacencyMatrix[returnIndex(v, n->data)][static_cast<int>(v.size() - 1)] += 1;
-					//n->c4->data.printPitcherGroup();
-
-					newPitcherCombinations = true;
-				}
-			}
-			if (n->c5 != nullptr) {
-				if (std::find(v.begin(), v.end(), n->c5->data) != v.end()) {
-
-				}
-				else {
-					// If a new pitcher combo was found throw it in the vector
-					v.push_back(n->c5->data);
-					// Show relationship on adjacency matrix
-					adjacencyMatrix[static_cast<int>(v.size() - 1)][returnIndex(v, n->data)] += 1;
-					adjacencyMatrix[returnIndex(v, n->data)][static_cast<int>(v.size() - 1)] += 1;
-					//n->c5->data.printPitcherGroup();
-
-					newPitcherCombinations = true;
-				}
-			}
-			if (n->c6 != nullptr) {
-				if (std::find(v.begin(), v.end(), n->c6->data) != v.end()) {
-
-				}
-				else {
-					// If a new pitcher combo was found throw it in the vector
-					v.push_back(n->c6->data);
-					// Show relationship on adjacency matrix
-					adjacencyMatrix[static_cast<int>(v.size() - 1)][returnIndex(v, n->data)] += 1;
-					adjacencyMatrix[returnIndex(v, n->data)][static_cast<int>(v.size() - 1)] += 1;
-					//n->c6->data.printPitcherGroup();
-
-					newPitcherCombinations = true;
-				}
-			}
-
-			// If just one new pitcher combo was found, take tree down a level
-			if (newPitcherCombinations) {
-				createTree(n->c1);
-				createTree(n->c2);
-				createTree(n->c3);
-				createTree(n->c4);
-				createTree(n->c5);
-				createTree(n->c6);
-			}
-			else {
+			if (bRepeated)
+			{
 				return nullptr;
 			}
 		}
+		
+		// check for unique combination
+		if (returnIndex(v, n->data) == -1) {
+			v.push_back(n->data);
+			//n->data.printPitcherGroup();
+		}
+
+		// check all possible pitcher transitions
+		for (int i = 0; i < 6; i++)
+		{
+			int pitcherNumber = (i % 3);
+			// Test pitcher if it has content, test if pitch can pour 
+			if (n->data.pitcherGroup[pitcherNumber].contents != 0)
+			{
+				int pitcherToPour = (i > 2)? ((i + 2) % 3) : ((i + 1) % 3);
+				// Try pitcher to leftmost pitcher checking if pitcher to pour at is full already
+				if (n->data.pitcherGroup[pitcherToPour].contents != n->data.pitcherGroup[pitcherToPour].capacity)
+				{
+					int pourAmount = n->data.pitcherGroup[pitcherToPour].capacity - n->data.pitcherGroup[pitcherToPour].contents;
+					int decreasedPitcher; int increasedPitcher;
+
+					// Normal Pour or Under Pour
+					if (n->data.pitcherGroup[pitcherNumber].contents > pourAmount)
+					{
+						decreasedPitcher = n->data.pitcherGroup[pitcherNumber].contents - pourAmount;
+						increasedPitcher = n->data.pitcherGroup[pitcherToPour].contents + pourAmount;
+					}
+					else
+					{
+						increasedPitcher = n->data.pitcherGroup[pitcherToPour].contents + n->data.pitcherGroup[i%3].contents;
+						decreasedPitcher = 0;
+					}
+
+					//create a new node
+					int pitcherUnchanged = (i > 2) ? ((pitcherToPour + 2) % 3) : ((pitcherToPour + 1) % 3);
+					switch (pitcherUnchanged)
+					{
+					case(0):
+						if(pitcherNumber == 1)
+							n->path[i] = newnode(n->data.pitcherGroup[0].contents, decreasedPitcher, increasedPitcher);
+						else
+							n->path[i] = newnode(n->data.pitcherGroup[0].contents, increasedPitcher, decreasedPitcher);
+						break;
+					case(1):
+						if (pitcherNumber == 2)
+							n->path[i] = newnode(increasedPitcher, n->data.pitcherGroup[1].contents, decreasedPitcher);
+						else
+							n->path[i] = newnode(decreasedPitcher, n->data.pitcherGroup[1].contents, increasedPitcher);
+						break;
+					case(2):
+						if (pitcherNumber == 0)
+							n->path[i] = newnode(decreasedPitcher, increasedPitcher, n->data.pitcherGroup[2].contents);
+						else
+							n->path[i] = newnode(increasedPitcher, decreasedPitcher, n->data.pitcherGroup[2].contents);
+						break;
+					default:
+						break;
+					}
+					n->path[i]->previous = n;
+					createTree(n->path[i], (height + 1));
+					leaves += 1;
+				}
+			}
+				
+		}
+		
 		return nullptr;
 	}
+
+	void updateAdjacencyMatrix(vector<Node*> closestCombinations)
+	{
+
+		for (int i = 1; i < 32; i++)
+		{
+			adjacencyMatrix[i][returnIndex(closestCombinations, closestCombinations[i]->previous->data)] += 1;
+			adjacencyMatrix[returnIndex(closestCombinations, closestCombinations[i]->previous->data)][i] += 1;
+		}
+	}
 };
+
+/* -------------------------------CODE FOR FINDING THE CLOSEST NODES TO THE ORIGIN----------------------------------------------------- */
+
+/* Function prototypes */
+void viewAllHeightNodes(Node* root, vector<Node*> &combinations, int level);
+
+/* Returns closest Nodes of all combinations*/
+vector<Node*> levelOrder(const Tree &tree)
+{
+	vector<Node*> combinations;
+	combinations.push_back(tree.root);
+	int i = 1;
+	while(combinations.size() != tree.v.size())
+	{
+		viewAllHeightNodes(tree.root, combinations, i);
+		//cout << "Height: " << i << endl;
+		i++;
+	}
+	return combinations;
+}
+
+/* Views nodes at a given level/height */
+void viewAllHeightNodes(Node* root, vector<Node*> &combinations, int level)
+{
+	if (root == NULL)
+		return;
+	if (level == 1)
+	{
+		/*if (root->data == PitcherGroup(8, 8, 0))
+		{
+			cout << "Found ";
+			root->data.printPitcherGroup();
+			cout << endl;
+			Node* Path = root;
+
+			while (Path != nullptr)
+			{
+				cout << "-> ";
+				Path->data.printPitcherGroup();
+				Path = Path->previous;
+			}
+			cout << endl << endl;
+		}*/
+		if (returnIndex(combinations, root->data) == -1) {
+			combinations.push_back(root);
+			//n->data.printPitcherGroup();
+		}
+	}
+	else if (level > 1)
+	{
+		for (int i = 0; i < 6; i++)
+		{
+			viewAllHeightNodes(root->path[i], combinations, level - 1);
+		}
+	}
+}
 
 
 
@@ -487,38 +369,30 @@ int main() {
 		}
 	}
 
-
-
 	PitcherGroup userPitcherCombination(input[0], input[1], input[2]);
 
 	// Creating Tree
 	Tree start;
-	Node *test = start.createTree(start.root);
-	//cout << "Total leaves: " << start.leaves << endl;
+	Node *test = start.createTree(start.root,1);
 
-	//// print all possible combinations
-	//for (auto &x : start.v) {
-	//	x.printPitcherGroup();
-	//}
-	//cout << endl << endl << "AdjMatrix checking:\n";
-
-	//cout << endl;
-	//// insert values into adjancyMatrix
-
-	//print2DVector(start.adjacencyMatrix);
+	vector<Node*> closest = levelOrder(start);
+	
+	start.updateAdjacencyMatrix(closest);
 
 	FloydAlg(start.adjacencyMatrix);
+
+	//print2DVector(start.adjacencyMatrix);
 
 	cout << "The path from ( 16 0 0 ) to ";
 	userPitcherCombination.printPitcherGroup();
 	cout << " is ";
 
 	if (returnIndex(start.v, userPitcherCombination) != -1)
-		cout << start.adjacencyMatrix[0][returnIndex(start.v, userPitcherCombination)] <<  endl;
+		cout << start.adjacencyMatrix[0][returnIndex(closest, userPitcherCombination)] <<  endl;
 	else
 		cout << "NONE, there is no such path to this combination!!!";
 
 	// end of program
-	system("PAUSE");
+	//system("PAUSE");
 	return 0;
 }
